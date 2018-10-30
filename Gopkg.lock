@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  digest = "1:831fb08a94ca897a701d78281ac67c8143eb7e67a66417bb2f4c49dc69db9229"
+  digest = "1:81d27cdca92f594a1d73b068d323c79f5003385eca27e1cd22cf177bffec725d"
   name = "github.com/devopsfaith/krakend"
   packages = [
     "config",
@@ -12,10 +12,11 @@
     "register",
     "register/internal",
     "sd",
+    "transport/http/client",
   ]
   pruneopts = "UT"
-  revision = "5aca9386db20759f750c18fd71daee950f2f284d"
-  version = "0.6.1"
+  revision = "f82f671d8f1dc151d22949a5a3902f487c76ac23"
+  version = "0.7.0"
 
 [[projects]]
   branch = "master"
