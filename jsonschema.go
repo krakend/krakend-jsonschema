@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"strings"
 
 	"github.com/devopsfaith/krakend/config"
@@ -80,4 +81,8 @@ func (v *validationError) Error() string {
 		errs[i] = fmt.Sprintf("- %s", desc)
 	}
 	return strings.Join(errs, "\n")
+}
+
+func (v *validationError) StatusCode() int {
+	return http.StatusBadRequest
 }
