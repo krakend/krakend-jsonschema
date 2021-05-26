@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/devopsfaith/krakend/config"
-	"github.com/devopsfaith/krakend/proxy"
+	"github.com/luraproject/lura/config"
+	"github.com/luraproject/lura/proxy"
 )
 
 func TestProxyFactory_erroredNext(t *testing.T) {
