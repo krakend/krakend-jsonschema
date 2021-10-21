@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/luraproject/lura/config"
-	"github.com/luraproject/lura/proxy"
+	"github.com/luraproject/lura/v2/config"
+	"github.com/luraproject/lura/v2/proxy"
 	"github.com/xeipuuv/gojsonschema"
 )
 

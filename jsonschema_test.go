@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/luraproject/lura/config"
-	"github.com/luraproject/lura/proxy"
+	"github.com/luraproject/lura/v2/config"
+	"github.com/luraproject/lura/v2/proxy"
 )
 
 func TestProxyFactory_erroredNext(t *testing.T) {
