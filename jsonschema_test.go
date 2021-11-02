@@ -10,12 +10,13 @@ import (
 	"testing"
 
 	"github.com/luraproject/lura/v2/config"
+	"github.com/luraproject/lura/v2/logging"
 	"github.com/luraproject/lura/v2/proxy"
 )
 
 func TestProxyFactory_erroredNext(t *testing.T) {
 	errExpected := errors.New("proxy factory called")
-	pf := ProxyFactory(proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
+	pf := ProxyFactory(logging.NoOp, proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
 		return func(_ context.Context, _ *proxy.Request) (*proxy.Response, error) {
 			t.Error("proxy called")
 			return nil, errors.New("proxy called")
@@ -34,7 +35,7 @@ func TestProxyFactory_erroredNext(t *testing.T) {
 
 func TestProxyFactory_bypass(t *testing.T) {
 	errExpected := errors.New("proxy called")
-	pf := ProxyFactory(proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
+	pf := ProxyFactory(logging.NoOp, proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
 		return func(_ context.Context, _ *proxy.Request) (*proxy.Response, error) {
 			return nil, errExpected
 		}, nil
@@ -51,7 +52,7 @@ func TestProxyFactory_bypass(t *testing.T) {
 
 func TestProxyFactory_validationFail(t *testing.T) {
 	errExpected := "- (root): Invalid type. Expected:"
-	pf := ProxyFactory(proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
+	pf := ProxyFactory(logging.NoOp, proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
 		return func(_ context.Context, _ *proxy.Request) (*proxy.Response, error) {
 			t.Error("proxy called!")
 			return nil, nil
@@ -92,7 +93,7 @@ func TestProxyFactory_validationFail(t *testing.T) {
 
 func TestProxyFactory_validationOK(t *testing.T) {
 	errExpected := errors.New("proxy called")
-	pf := ProxyFactory(proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
+	pf := ProxyFactory(logging.NoOp, proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
 		return func(_ context.Context, _ *proxy.Request) (*proxy.Response, error) {
 			return nil, errExpected
 		}, nil
