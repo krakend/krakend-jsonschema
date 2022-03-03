@@ -3,7 +3,7 @@ module github.com/devopsfaith/krakend-jsonschema/v2
 go 1.17
 
 require (
-	github.com/luraproject/lura/v2 v2.0.0-dev
+	github.com/luraproject/lura/v2 v2.0.0
 	github.com/xeipuuv/gojsonschema v1.2.1-0.20200424115421-065759f9c3d7
 )
 
