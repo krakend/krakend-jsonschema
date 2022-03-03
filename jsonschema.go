@@ -10,8 +10,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/luraproject/lura/config"
-	"github.com/luraproject/lura/proxy"
+	"github.com/luraproject/lura/v2/config"
+	"github.com/luraproject/lura/v2/logging"
+	"github.com/luraproject/lura/v2/proxy"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -21,7 +22,7 @@ var ErrEmptyBody = errors.New("could not validate an empty body")
 
 // ProxyFactory creates an proxy factory over the injected one adding a JSON Schema
 // validator middleware to the pipe when required
-func ProxyFactory(pf proxy.Factory) proxy.FactoryFunc {
+func ProxyFactory(logger logging.Logger, pf proxy.Factory) proxy.FactoryFunc {
 	return proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
 		next, err := pf.New(cfg)
 		if err != nil {
@@ -31,6 +32,7 @@ func ProxyFactory(pf proxy.Factory) proxy.FactoryFunc {
 		if !ok || schemaLoader == nil {
 			return next, nil
 		}
+		logger.Debug("[ENDPOINT: " + cfg.Endpoint + "][JSONSchema] Validator enabled")
 		return newProxy(schemaLoader, next), nil
 	})
 }
