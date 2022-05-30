@@ -1,4 +1,4 @@
-module github.com/devopsfaith/krakend-jsonschema/v2
+module github.com/krakendio/krakend-jsonschema/v2
 
 go 1.17
 
