@@ -85,6 +85,6 @@ func (v *validationError) Error() string {
 	return strings.Join(errs, "\n")
 }
 
-func (v *validationError) StatusCode() int {
+func (*validationError) StatusCode() int {
 	return http.StatusBadRequest
 }
