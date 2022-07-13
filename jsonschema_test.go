@@ -50,6 +50,34 @@ func TestProxyFactory_bypass(t *testing.T) {
 	}
 }
 
+func TestProxyFactory_schemaInvalidBypass(t *testing.T) {
+	errExpected := errors.New("proxy called")
+	pf := ProxyFactory(logging.NoOp, proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
+		return func(_ context.Context, _ *proxy.Request) (*proxy.Response, error) {
+			return nil, errExpected
+		}, nil
+	}))
+
+	tc := `{"type": "not a valid type"}`
+	cfg := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(tc), &cfg); err != nil {
+		t.Error(err)
+		return
+	}
+	p, err := pf.New(&config.EndpointConfig{
+		ExtraConfig: map[string]interface{}{
+			Namespace: cfg,
+		},
+	})
+	if err != nil {
+		t.Errorf("unexpected error %s", err.Error())
+		return
+	}
+	if _, err := p(context.Background(), &proxy.Request{Body: ioutil.NopCloser(bytes.NewBufferString(""))}); err != errExpected {
+		t.Errorf("unexpected error %v", err)
+	}
+}
+
 func TestProxyFactory_validationFail(t *testing.T) {
 	errExpected := "- (root): Invalid type. Expected:"
 	pf := ProxyFactory(logging.NoOp, proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {

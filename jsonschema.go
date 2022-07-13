@@ -32,12 +32,16 @@ func ProxyFactory(logger logging.Logger, pf proxy.Factory) proxy.FactoryFunc {
 		if !ok || schemaLoader == nil {
 			return next, nil
 		}
+		schema, err := gojsonschema.NewSchema(schemaLoader)
+		if err != nil {
+			return next, nil
+		}
 		logger.Debug("[ENDPOINT: " + cfg.Endpoint + "][JSONSchema] Validator enabled")
-		return newProxy(schemaLoader, next), nil
+		return newProxy(schema, next), nil
 	})
 }
 
-func newProxy(schemaLoader gojsonschema.JSONLoader, next proxy.Proxy) proxy.Proxy {
+func newProxy(schema *gojsonschema.Schema, next proxy.Proxy) proxy.Proxy {
 	return func(ctx context.Context, r *proxy.Request) (*proxy.Response, error) {
 		if r.Body == nil {
 			return nil, ErrEmptyBody
@@ -49,7 +53,7 @@ func newProxy(schemaLoader gojsonschema.JSONLoader, next proxy.Proxy) proxy.Prox
 		r.Body.Close()
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
-		result, err := gojsonschema.Validate(schemaLoader, gojsonschema.NewBytesLoader(body))
+		result, err := schema.Validate(gojsonschema.NewBytesLoader(body))
 		if err != nil {
 			return nil, err
 		}
