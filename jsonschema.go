@@ -34,6 +34,7 @@ func ProxyFactory(logger logging.Logger, pf proxy.Factory) proxy.FactoryFunc {
 		}
 		schema, err := gojsonschema.NewSchema(schemaLoader)
 		if err != nil {
+			logger.Error("[ENDPOINT: " + cfg.Endpoint + "][JSONSchema] Parsing the definition:" + err.Error())
 			return next, nil
 		}
 		logger.Debug("[ENDPOINT: " + cfg.Endpoint + "][JSONSchema] Validator enabled")
