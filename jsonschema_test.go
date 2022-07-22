@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"net/http"
 	"strings"
 	"testing"
 
@@ -153,4 +154,109 @@ func TestProxyFactory_validationOK(t *testing.T) {
 			t.Errorf("unexpected error %s", err.Error())
 		}
 	}
+}
+
+func TestProxyFactory_invalidJSON(t *testing.T) {
+	errExpected := "could not validate a malformed body"
+	statusExpected := http.StatusBadRequest
+	pf := ProxyFactory(logging.NoOp, proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
+		return func(_ context.Context, _ *proxy.Request) (*proxy.Response, error) {
+			t.Error("proxy called!")
+			return nil, nil
+		}, nil
+	}))
+
+	for _, tc := range []string{
+		`{"type": "object"}`,
+	} {
+		cfg := map[string]interface{}{}
+		if err := json.Unmarshal([]byte(tc), &cfg); err != nil {
+			t.Error(err)
+			return
+		}
+		p, err := pf.New(&config.EndpointConfig{
+			ExtraConfig: map[string]interface{}{
+				Namespace: cfg,
+			},
+		})
+		if err != nil {
+			t.Errorf("unexpected error %s", err.Error())
+			return
+		}
+		var body = []byte(`{
+			"name": "John 
+Doe"
+		}`)
+		_, err = p(context.Background(), &proxy.Request{Body: ioutil.NopCloser(bytes.NewReader(body))})
+		if err == nil {
+			t.Error("expecting error")
+			return
+		}
+		if !strings.Contains(err.Error(), errExpected) {
+			t.Errorf("unexpected error %s", err.Error())
+			return
+		}
+		statusCodeErr, ok := err.(statusCodeError)
+		if !ok {
+			t.Errorf("unexpected error: %+v (%T)", err, err)
+			return
+		}
+		if sc := statusCodeErr.StatusCode(); sc != statusExpected {
+			t.Errorf("unexpected status code: %d", sc)
+			return
+		}
+	}
+}
+
+func TestProxyFactory_emptyBody(t *testing.T) {
+	errExpected := "could not validate an empty body"
+	statusExpected := http.StatusBadRequest
+	pf := ProxyFactory(logging.NoOp, proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
+		return func(_ context.Context, _ *proxy.Request) (*proxy.Response, error) {
+			t.Error("proxy called!")
+			return nil, nil
+		}, nil
+	}))
+
+	for _, tc := range []string{
+		`{"type": "object"}`,
+	} {
+		cfg := map[string]interface{}{}
+		if err := json.Unmarshal([]byte(tc), &cfg); err != nil {
+			t.Error(err)
+			return
+		}
+		p, err := pf.New(&config.EndpointConfig{
+			ExtraConfig: map[string]interface{}{
+				Namespace: cfg,
+			},
+		})
+		if err != nil {
+			t.Errorf("unexpected error %s", err.Error())
+			return
+		}
+		_, err = p(context.Background(), &proxy.Request{Body: nil})
+		if err == nil {
+			t.Error("expecting error")
+			return
+		}
+		if !strings.Contains(err.Error(), errExpected) {
+			t.Errorf("unexpected error %s", err.Error())
+			return
+		}
+		statusCodeErr, ok := err.(statusCodeError)
+		if !ok {
+			t.Errorf("unexpected error: %+v (%T)", err, err)
+			return
+		}
+		if sc := statusCodeErr.StatusCode(); sc != statusExpected {
+			t.Errorf("unexpected status code: %d", sc)
+			return
+		}
+	}
+}
+
+type statusCodeError interface {
+	error
+	StatusCode() int
 }
