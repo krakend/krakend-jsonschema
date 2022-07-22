@@ -5,8 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -48,12 +48,12 @@ func newProxy(schema *gojsonschema.Schema, next proxy.Proxy) proxy.Proxy {
 		if r.Body == nil {
 			return nil, ErrEmptyBody
 		}
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			return nil, err
 		}
 		r.Body.Close()
-		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 		result, err := schema.Validate(gojsonschema.NewBytesLoader(body))
 		if err != nil {
