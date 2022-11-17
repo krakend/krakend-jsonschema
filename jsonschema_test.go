@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -46,7 +46,7 @@ func TestProxyFactory_bypass(t *testing.T) {
 		t.Errorf("unexpected error %s", err.Error())
 		return
 	}
-	if _, err := p(context.Background(), &proxy.Request{Body: ioutil.NopCloser(bytes.NewBufferString(""))}); err != errExpected {
+	if _, err := p(context.Background(), &proxy.Request{Body: io.NopCloser(bytes.NewBufferString(""))}); err != errExpected {
 		t.Errorf("unexpected error %v", err)
 	}
 }
@@ -74,7 +74,7 @@ func TestProxyFactory_schemaInvalidBypass(t *testing.T) {
 		t.Errorf("unexpected error %s", err.Error())
 		return
 	}
-	if _, err := p(context.Background(), &proxy.Request{Body: ioutil.NopCloser(bytes.NewBufferString(""))}); err != errExpected {
+	if _, err := p(context.Background(), &proxy.Request{Body: io.NopCloser(bytes.NewBufferString(""))}); err != errExpected {
 		t.Errorf("unexpected error %v", err)
 	}
 }
@@ -109,7 +109,7 @@ func TestProxyFactory_validationFail(t *testing.T) {
 			t.Errorf("unexpected error %s", err.Error())
 			return
 		}
-		_, err = p(context.Background(), &proxy.Request{Body: ioutil.NopCloser(bytes.NewBufferString("{}"))})
+		_, err = p(context.Background(), &proxy.Request{Body: io.NopCloser(bytes.NewBufferString("{}"))})
 		if err == nil {
 			t.Error("expecting error")
 			return
@@ -145,7 +145,7 @@ func TestProxyFactory_validationOK(t *testing.T) {
 			t.Errorf("unexpected error %s", err.Error())
 			return
 		}
-		_, err = p(context.Background(), &proxy.Request{Body: ioutil.NopCloser(bytes.NewBufferString("{}"))})
+		_, err = p(context.Background(), &proxy.Request{Body: io.NopCloser(bytes.NewBufferString("{}"))})
 		if err == nil {
 			t.Error("expecting error")
 			return
