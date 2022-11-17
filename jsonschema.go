@@ -44,7 +44,7 @@ func ProxyFactory(logger logging.Logger, pf proxy.Factory) proxy.FactoryFunc {
 
 func newProxy(schema *gojsonschema.Schema, next proxy.Proxy) proxy.Proxy {
 	return func(ctx context.Context, r *proxy.Request) (*proxy.Response, error) {
-		if r.Body == nil {
+		if r.Body == nil || r.Body == http.NoBody {
 			return nil, ErrEmptyBody
 		}
 		body, err := ioutil.ReadAll(r.Body)

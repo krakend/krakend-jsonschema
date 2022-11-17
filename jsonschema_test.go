@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"net/http"
 	"strings"
 	"testing"
 
@@ -152,5 +153,33 @@ func TestProxyFactory_validationOK(t *testing.T) {
 		if err != errExpected {
 			t.Errorf("unexpected error %s", err.Error())
 		}
+	}
+}
+
+func TestProxyFactory_emptyRequestBody(t *testing.T) {
+	pf := ProxyFactory(logging.NoOp, proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
+		return func(_ context.Context, _ *proxy.Request) (*proxy.Response, error) {
+			t.Error("proxy called!")
+			return nil, nil
+		}, nil
+	}))
+
+	cfg := map[string]interface{}{}
+	if err := json.Unmarshal([]byte(`{"type": "integer"}`), &cfg); err != nil {
+		t.Error(err)
+		return
+	}
+	p, err := pf.New(&config.EndpointConfig{
+		ExtraConfig: map[string]interface{}{
+			Namespace: cfg,
+		},
+	})
+	if err != nil {
+		t.Errorf("unexpected error %s", err.Error())
+		return
+	}
+	_, err = p(context.Background(), &proxy.Request{Body: http.NoBody})
+	if err != ErrEmptyBody {
+		t.Error("expecting error empty body")
 	}
 }
