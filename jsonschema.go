@@ -19,8 +19,7 @@ import (
 const Namespace = "github.com/devopsfaith/krakend-jsonschema"
 
 var (
-	ErrEmptyBody     = &malformedError{err: errors.New("could not validate an empty body")}
-	ErrMalformedBody = &malformedError{err: errors.New("could not validate a malformed body")}
+	ErrEmptyBody = &malformedError{err: errors.New("could not validate an empty body")}
 )
 
 // ProxyFactory creates an proxy factory over the injected one adding a JSON Schema
@@ -55,11 +54,14 @@ func newProxy(schema *gojsonschema.Schema, next proxy.Proxy) proxy.Proxy {
 			return nil, err
 		}
 		r.Body.Close()
+		if len(body) == 0 {
+			return nil, ErrEmptyBody
+		}
 		r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 		result, err := schema.Validate(gojsonschema.NewBytesLoader(body))
 		if err != nil {
-			return nil, ErrMalformedBody
+			return nil, &malformedError{err: err}
 		}
 		if !result.Valid() {
 			return nil, &validationError{errs: result.Errors()}

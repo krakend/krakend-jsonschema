@@ -157,7 +157,7 @@ func TestProxyFactory_validationOK(t *testing.T) {
 }
 
 func TestProxyFactory_invalidJSON(t *testing.T) {
-	errExpected := "could not validate a malformed body"
+	errExpected := "invalid character '\\n' in string literal"
 	statusExpected := http.StatusBadRequest
 	pf := ProxyFactory(logging.NoOp, proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
 		return func(_ context.Context, _ *proxy.Request) (*proxy.Response, error) {
@@ -235,7 +235,7 @@ func TestProxyFactory_emptyBody(t *testing.T) {
 			t.Errorf("unexpected error %s", err.Error())
 			return
 		}
-		_, err = p(context.Background(), &proxy.Request{Body: nil})
+		_, err = p(context.Background(), &proxy.Request{Body: http.NoBody})
 		if err == nil {
 			t.Error("expecting error")
 			return
