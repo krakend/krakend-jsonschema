@@ -5,8 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -18,7 +18,8 @@ import (
 
 const Namespace = "github.com/devopsfaith/krakend-jsonschema"
 
-var ErrEmptyBody = errors.New("could not validate an empty body")
+var ErrEmptyBody = &malformedError{err: errors.New("could not validate an empty body")}
+var ErrMalformedBody = &malformedError{err: errors.New("could not validate a malformed body")}
 
 // ProxyFactory creates an proxy factory over the injected one adding a JSON Schema
 // validator middleware to the pipe when required
@@ -47,16 +48,16 @@ func newProxy(schema *gojsonschema.Schema, next proxy.Proxy) proxy.Proxy {
 		if r.Body == nil {
 			return nil, ErrEmptyBody
 		}
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			return nil, err
 		}
 		r.Body.Close()
-		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 		result, err := schema.Validate(gojsonschema.NewBytesLoader(body))
 		if err != nil {
-			return nil, err
+			return nil, ErrMalformedBody
 		}
 		if !result.Valid() {
 			return nil, &validationError{errs: result.Errors()}
@@ -91,5 +92,17 @@ func (v *validationError) Error() string {
 }
 
 func (*validationError) StatusCode() int {
+	return http.StatusBadRequest
+}
+
+type malformedError struct {
+	err error
+}
+
+func (m *malformedError) Error() string {
+	return m.err.Error()
+}
+
+func (*malformedError) StatusCode() int {
 	return http.StatusBadRequest
 }
