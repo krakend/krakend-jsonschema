@@ -18,9 +18,7 @@ import (
 
 const Namespace = "github.com/devopsfaith/krakend-jsonschema"
 
-var (
-	ErrEmptyBody = &malformedError{err: errors.New("could not validate an empty body")}
-)
+var ErrEmptyBody = &malformedError{err: errors.New("could not validate an empty body")}
 
 // ProxyFactory creates an proxy factory over the injected one adding a JSON Schema
 // validator middleware to the pipe when required
