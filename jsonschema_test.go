@@ -183,7 +183,7 @@ func TestProxyFactory_invalidJSON(t *testing.T) {
 			t.Errorf("unexpected error %s", err.Error())
 			return
 		}
-		var body = []byte(`{
+		body := []byte(`{
 			"name": "John 
 Doe"
 		}`)
