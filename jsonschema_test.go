@@ -80,7 +80,7 @@ func TestProxyFactory_schemaInvalidBypass(t *testing.T) {
 }
 
 func TestProxyFactory_validationFail(t *testing.T) {
-	errExpected := "- (root): Invalid type. Expected:"
+	errExpected := "jsonschema validation failed with"
 	pf := ProxyFactory(logging.NoOp, proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
 		return func(_ context.Context, _ *proxy.Request) (*proxy.Response, error) {
 			t.Error("proxy called!")
@@ -146,6 +146,39 @@ func TestProxyFactory_validationOK(t *testing.T) {
 			return
 		}
 		_, err = p(context.Background(), &proxy.Request{Body: io.NopCloser(bytes.NewBufferString("{}"))})
+		if err == nil {
+			t.Error("expecting error")
+			return
+		}
+		if err != errExpected {
+			t.Errorf("unexpected error %s", err.Error())
+		}
+	}
+}
+
+func TestBakcnedFactory_validationOK(t *testing.T) {
+	errExpected := errors.New("proxy called")
+	bf := BackendFactory(logging.NoOp, func(cfg *config.Backend) proxy.Proxy {
+		return func(_ context.Context, _ *proxy.Request) (*proxy.Response, error) {
+			return nil, errExpected
+		}
+	})
+
+	for _, tc := range []string{
+		`{"type": "object"}`,
+	} {
+		cfg := map[string]interface{}{}
+		if err := json.Unmarshal([]byte(tc), &cfg); err != nil {
+			t.Error(err)
+			return
+		}
+		p := bf(&config.Backend{
+			ExtraConfig: map[string]interface{}{
+				Namespace: cfg,
+			},
+		})
+
+		_, err := p(context.Background(), &proxy.Request{Body: io.NopCloser(bytes.NewBufferString("{}"))})
 		if err == nil {
 			t.Error("expecting error")
 			return
