@@ -9,13 +9,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/luraproject/lura/v2/config"
-	"github.com/luraproject/lura/v2/logging"
-	"github.com/luraproject/lura/v2/proxy"
+	"github.com/luraproject/lura/v3/config"
+	"github.com/luraproject/lura/v3/logging"
+	"github.com/luraproject/lura/v3/proxy"
 	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
-const Namespace = "github.com/devopsfaith/krakend-jsonschema"
+const Namespace = "validation/json-schema"
 
 var ErrEmptyBody = &malformedError{err: errors.New("could not validate an empty body")}
 
