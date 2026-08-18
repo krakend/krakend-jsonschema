@@ -11,7 +11,7 @@ Include in your `krakend.json` the JSON Schema configuration associated to every
 		{
 			"endpoint": "/foo",
 			"extra_config": {
-				"github.com/devopsfaith/krakend-jsonschema": {
+				"validation/json-schema": {
 					YOUR SCHEMA HERE
 				}
 			}
@@ -19,5 +19,5 @@ Include in your `krakend.json` the JSON Schema configuration associated to every
 	]
 }
 ```
-The configuration key `"github.com/devopsfaith/krakend-jsonschema"` takes directly as value the schema definition. 
+The configuration key `"validation/json-schema"` takes directly as value the schema definition. 
 Examples of schema can be found [here](http://json-schema.org/learn/miscellaneous-examples.html)
