@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -23,6 +24,7 @@ var ErrEmptyBody = &malformedError{err: errors.New("could not validate an empty 
 // validator middleware to the pipe when required
 func ProxyFactory(logger logging.Logger, pf proxy.Factory) proxy.FactoryFunc {
 	return proxy.FactoryFunc(func(cfg *config.EndpointConfig) (proxy.Proxy, error) {
+		logPrefix := fmt.Sprintf("[ENDPOINT: %s %s][JSONSchema]", cfg.Method, cfg.Endpoint)
 		next, err := pf.New(cfg)
 		if err != nil {
 			return proxy.NoopProxy, err
@@ -36,10 +38,10 @@ func ProxyFactory(logger logging.Logger, pf proxy.Factory) proxy.FactoryFunc {
 		c.AddResource("./schema.json", jschema)
 		s, err := c.Compile("./schema.json")
 		if err != nil {
-			logger.Error("[ENDPOINT: " + cfg.Endpoint + "][JSONSchema] Parsing the definition:" + err.Error())
+			logger.Error(logPrefix + " Parsing the definition:" + err.Error())
 			return next, nil
 		}
-		logger.Debug("[ENDPOINT: " + cfg.Endpoint + "][JSONSchema] Validator enabled")
+		logger.Debug(logPrefix + " Validator enabled")
 		return newProxy(s, next), nil
 	})
 }
